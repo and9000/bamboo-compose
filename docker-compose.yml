@@ -1,0 +1,50 @@
+---
+version: '2'
+
+services:
+  bamboo:
+    image: ibandrea/bamboo:5.15.0.1
+    ports:
+      - "8085:8085"
+      - "54663:54663"
+    expose:
+      - "8085"
+      - "54663"
+    volumes:
+      - ./bamboo/data/:/var/local/atlassian/bamboo
+    networks:
+      backend:
+        aliases:
+          - bamboo
+
+  bamboo-mysql:
+    image: mysql:5.7.17
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    volumes:
+      - ./bamboo-mysql/data:/var/lib/mysql
+      - ./bamboo-mysql/config/mysql.conf.d/mysqld.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=toor
+    networks:
+      backend:
+        aliases:
+          - bamboo-mysql
+
+  phpmyadmin-bamboo:
+    image: phpmyadmin/phpmyadmin:4.6.6-1
+    ports:
+      - "3300:80"
+    links:
+      - bamboo-mysql
+    volumes:
+      - ./phpmyadmin-bamboo/config/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+    networks:
+      backend:
+        aliases:
+          - ibphpmyadmin
+
+networks:
+  backend: {}
